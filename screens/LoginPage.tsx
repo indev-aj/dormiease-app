@@ -1,5 +1,7 @@
 // LoginPage.tsx
-import React, { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 
 export default function LoginPage({ navigation }: any) {
@@ -7,19 +9,16 @@ export default function LoginPage({ navigation }: any) {
     const [password, setPassword] = useState('');
 
     const handleLogin = async () => {
-        navigation.replace('Complaints');
         try {
-            const res = await fetch('http://localhost:3000/api/users/signin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
+            const res = await axios.post('http://localhost:3000/api/user/signin', {email, password});
 
-            const data = await res.json();
+            const data = await res.data;
             
-            if (res.ok) {
+            if (res.status == 201 || res.status == 200) {
+                await AsyncStorage.setItem('user', JSON.stringify(data.user));
+
                 Alert.alert('Login successful');
-                // Navigate to app home page or dashboard
+                navigation.replace('Main');
             } else {
                 Alert.alert('Login failed', data.message);
             }
@@ -28,6 +27,19 @@ export default function LoginPage({ navigation }: any) {
             Alert.alert('Error', 'Unable to login.');
         }
     };
+
+    useEffect(() => {
+        const getUser = async () => {
+            const userJson = await AsyncStorage.getItem('user');
+            const user = userJson ? JSON.parse(userJson) : null;
+
+            if (user) {
+                navigation.replace('Main');
+            }
+        }
+
+        getUser();
+    }, []);
 
     return (
         <View style={styles.container}>

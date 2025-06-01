@@ -1,4 +1,6 @@
 // RoomApplicationPage.tsx
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert } from 'react-native';
 
@@ -11,13 +13,22 @@ interface Room {
 export default function RoomApplicationPage() {
     const [rooms, setRooms] = useState<Room[]>([]);
 
+    
     useEffect(() => {
         // Simulate fetch call to /api/rooms
         const fetchRooms = async () => {
             try {
+                const userJson = await AsyncStorage.getItem('user');
+                const user = userJson ? JSON.parse(userJson) : null;
                 const res = await fetch('http://localhost:3000/api/room/all');
                 const data = await res.json();
-                const enriched = data.map((room: any) => ({ ...room, applied: false }));
+                const userId = user.id; // Replace this with your actual user ID from auth context/storage
+                console.log(user.id)
+
+                const enriched = data.map((room: any) => ({
+                    ...room,
+                    applied: room.userIds.includes(userId),
+                }));
                 setRooms(enriched);
             } catch (err) {
                 Alert.alert('Error', 'Failed to load rooms');
@@ -29,20 +40,18 @@ export default function RoomApplicationPage() {
 
     const handleApply = async (roomId: number) => {
         try {
-            const res = await fetch('http://localhost:3000/api/user-rooms/apply', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ roomId, userId: 1 }) // replace with actual userId from auth
-            });
+            const userJson = await AsyncStorage.getItem('user');
+            const user = userJson ? JSON.parse(userJson) : null;
+            const res = await axios.post('http://localhost:3000/api/user/apply-room', { userId: user.id, roomId });
 
-            if (res.ok) {
+            if (res.data) {
                 setRooms(prev =>
                     prev.map(room =>
                         room.id === roomId ? { ...room, applied: true } : room
                     )
                 );
             } else {
-                const data = await res.json();
+                const data = await res.data;
                 Alert.alert('Apply Failed', data.message);
             }
         } catch (err) {

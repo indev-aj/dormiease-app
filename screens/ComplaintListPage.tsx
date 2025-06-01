@@ -1,4 +1,6 @@
 // ComplaintListPage.tsx
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 
@@ -15,8 +17,13 @@ export default function ComplaintListPage({ navigation }: any) {
     useEffect(() => {
         const fetchComplaints = async () => {
             try {
-                const res = await fetch('http://localhost:3000/api/complaints/user/1'); // Replace 1 with actual user ID
-                const data = await res.json();
+                const userJson = await AsyncStorage.getItem('user');
+                const user = userJson ? JSON.parse(userJson) : null;
+
+                const url = 'http://localhost:3000/api/complaint/' + user.id;
+                const res = await axios.get(url);
+                const data = await res.data;
+
                 setComplaints(data);
             } catch (err) {
                 console.error('Failed to fetch complaints');
@@ -39,13 +46,6 @@ export default function ComplaintListPage({ navigation }: any) {
                     </View>
                 )}
             />
-
-            <TouchableOpacity
-                style={styles.fab}
-                onPress={() => navigation.navigate('SubmitComplaint')}
-            >
-                <Text style={styles.fabText}>+</Text>
-            </TouchableOpacity>
         </View>
     );
 }

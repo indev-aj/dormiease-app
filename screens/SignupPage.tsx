@@ -1,4 +1,5 @@
 // SignupPage.tsx
+import axios from 'axios';
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 
@@ -10,17 +11,12 @@ export default function SignupPage({ navigation }: any) {
 
     const handleSignup = async () => {
         try {
-            const res = await fetch('http://localhost:3000/api/users/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, student_id: studentId, email, password })
-            });
+            const res = await axios.post('http://localhost:3000/api/user/signup', {name, studentId, password, email});
+            const data = await res.data;
 
-            const data = await res.json();
-
-            if (res.ok) {
+            if (res.status == 201 || res.status == 200) {
                 Alert.alert('Signup successful');
-                navigation.navigate('Login');
+                navigation.replace('Login');
             } else {
                 Alert.alert('Signup failed', data.message);
             }
