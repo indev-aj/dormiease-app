@@ -1,7 +1,8 @@
 // ComplaintListPage.tsx
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 
 interface Complaint {
@@ -14,23 +15,26 @@ interface Complaint {
 export default function ComplaintListPage({ navigation }: any) {
     const [complaints, setComplaints] = useState<Complaint[]>([]);
 
-    useEffect(() => {
-        const fetchComplaints = async () => {
-            try {
-                const userJson = await AsyncStorage.getItem('user');
-                const user = userJson ? JSON.parse(userJson) : null;
+    useFocusEffect(
+        useCallback(() => {
+            const fetchComplaints = async () => {
+                try {
+                    const userJson = await AsyncStorage.getItem('user');
+                    const user = userJson ? JSON.parse(userJson) : null;
 
-                const url = 'http://localhost:3000/api/complaint/' + user.id;
-                const res = await axios.get(url);
-                const data = await res.data;
+                    const url = 'http://localhost:3000/api/complaint/' + user.id;
+                    const res = await axios.get(url);
+                    const data = await res.data;
 
-                setComplaints(data);
-            } catch (err) {
-                console.error('Failed to fetch complaints');
-            }
-        };
-        fetchComplaints();
-    }, []);
+                    setComplaints(data);
+                } catch (err) {
+                    console.error('Failed to fetch complaints');
+                }
+            };
+
+            fetchComplaints();
+        }, []) // Empty deps: re-run every time the screen is focused
+    );
 
     return (
         <View style={styles.container}>

@@ -23,7 +23,6 @@ export default function RoomApplicationPage() {
                 const res = await fetch('http://localhost:3000/api/room/all');
                 const data = await res.json();
                 const userId = user.id; // Replace this with your actual user ID from auth context/storage
-                console.log(user.id)
 
                 const enriched = data.map((room: any) => ({
                     ...room,
