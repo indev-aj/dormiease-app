@@ -38,10 +38,6 @@ export default function RoomApplicationPage() {
                         room.userStatuses.some((ur: any) => ur.userId === userId && ur.status === 'approved')
                     );
 
-
-                    console.log('enriched: ', enriched);
-                    console.log('assigned: ', approvedRooms);
-
                     setRooms(enriched);
                     setUserRoom(approvedRooms);
                 } catch (err) {

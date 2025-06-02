@@ -10,6 +10,7 @@ import SignupPage from './screens/SignupPage';
 import RoomApplicationPage from './screens/RoomApplicationPage';
 import ComplaintListPage from './screens/ComplaintListPage';
 import NewComplaintPage from './screens/NewComplaintPage';
+import ComplaintDetailsPage from './screens/ComplaintDetailPage';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -37,23 +38,14 @@ function DrawerRoutes() {
             <Drawer.Screen
                 name="Rooms"
                 component={RoomApplicationPage}
-                // options={({ navigation }) => ({
-                //     headerRight: () => <LogoutButton navigation={navigation} />,
-                // })}
             />
             <Drawer.Screen
                 name="Complaints"
                 component={ComplaintListPage}
-                // options={({ navigation }) => ({
-                //     headerRight: () => <LogoutButton navigation={navigation} />,
-                // })}
             />
             <Drawer.Screen
                 name="Submit Complaint"
                 component={NewComplaintPage}
-                // options={({ navigation }) => ({
-                //     headerRight: () => <LogoutButton navigation={navigation} />,
-                // })}
             />
             <Drawer.Screen
                 name="Logout"
@@ -77,10 +69,30 @@ export default function App() {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <NavigationContainer>
-                <Stack.Navigator screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="Login" component={LoginPage} />
-                    <Stack.Screen name="Signup" component={SignupPage} />
-                    <Stack.Screen name="Main" component={DrawerRoutes} />
+                <Stack.Navigator>
+                    {/* Hide header for login/signup/main */}
+                    <Stack.Screen
+                        name="Login"
+                        component={LoginPage}
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                        name="Signup"
+                        component={SignupPage}
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                        name="Main"
+                        component={DrawerRoutes}
+                        options={{ headerShown: false }}
+                    />
+
+                    {/* Show header for complaint details */}
+                    <Stack.Screen
+                        name="ComplaintDetails"
+                        component={ComplaintDetailsPage}
+                        options={{ title: "Complaint Details" }}
+                    />
                 </Stack.Navigator>
             </NavigationContainer>
         </GestureHandlerRootView>

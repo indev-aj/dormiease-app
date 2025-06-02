@@ -43,11 +43,15 @@ export default function ComplaintListPage({ navigation }: any) {
                 data={complaints}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
-                    <View style={[styles.item, item.status === 'resolved' && styles.resolvedItem]}>
-                        <Text style={styles.itemTitle}>{item.title}</Text>
-                        <Text style={styles.itemDetails}>{item.details}</Text>
-                        <Text style={styles.itemStatus}>{item.status}</Text>
-                    </View>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('ComplaintDetails', { complaint: item })}
+                    >
+                        <View style={[styles.item, item.status === 'resolved' && styles.resolvedItem]}>
+                            <Text style={styles.itemTitle}>{item.title}</Text>
+                            <Text style={styles.itemDetails}>{item.details}</Text>
+                            <Text style={styles.itemStatus}>{item.status}</Text>
+                        </View>
+                    </TouchableOpacity>
                 )}
             />
         </View>
