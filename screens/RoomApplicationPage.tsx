@@ -1,7 +1,8 @@
 // RoomApplicationPage.tsx
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert } from 'react-native';
 
 interface Room {
@@ -13,10 +14,9 @@ interface Room {
 export default function RoomApplicationPage() {
     const [rooms, setRooms] = useState<Room[]>([]);
 
-    
-    useEffect(() => {
-        // Simulate fetch call to /api/rooms
-        const fetchRooms = async () => {
+    useFocusEffect(
+        useCallback(() => {
+            const fetchRooms = async () => {
             try {
                 const userJson = await AsyncStorage.getItem('user');
                 const user = userJson ? JSON.parse(userJson) : null;
@@ -35,7 +35,8 @@ export default function RoomApplicationPage() {
         };
 
         fetchRooms();
-    }, []);
+        }, []) // Empty deps: re-run every time the screen is focused
+    );
 
     const handleApply = async (roomId: number) => {
         try {
