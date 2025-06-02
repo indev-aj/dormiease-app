@@ -13,28 +13,43 @@ interface Room {
 
 export default function RoomApplicationPage() {
     const [rooms, setRooms] = useState<Room[]>([]);
+    const [userRoom, setUserRoom] = useState<Room[]>([]);
 
     useFocusEffect(
         useCallback(() => {
             const fetchRooms = async () => {
-            try {
-                const userJson = await AsyncStorage.getItem('user');
-                const user = userJson ? JSON.parse(userJson) : null;
-                const res = await fetch('http://localhost:3000/api/room/all');
-                const data = await res.json();
-                const userId = user.id; // Replace this with your actual user ID from auth context/storage
+                try {
+                    const userJson = await AsyncStorage.getItem('user');
+                    const user = userJson ? JSON.parse(userJson) : null;
+                    const res = await fetch('http://localhost:3000/api/room/all');
+                    const data = await res.json();
+                    const userId = user.id; // Replace this with your actual user ID from auth context/storage
 
-                const enriched = data.map((room: any) => ({
-                    ...room,
-                    applied: room.userIds.includes(userId),
-                }));
-                setRooms(enriched);
-            } catch (err) {
-                Alert.alert('Error', 'Failed to load rooms');
-            }
-        };
+                    const enriched = data.map((room: any) => {
+                        const userStatus = room.userStatuses.find((u: any) => u.userId === userId);
+                        return {
+                            ...room,
+                            applied: !!userStatus,
+                            approved: userStatus?.status === 'approved',
+                        };
+                    });
 
-        fetchRooms();
+                    const approvedRooms = data.filter((room: any) =>
+                        room.userStatuses.some((ur: any) => ur.userId === userId && ur.status === 'approved')
+                    );
+
+
+                    console.log('enriched: ', enriched);
+                    console.log('assigned: ', approvedRooms);
+
+                    setRooms(enriched);
+                    setUserRoom(approvedRooms);
+                } catch (err) {
+                    Alert.alert('Error', 'Failed to load rooms');
+                }
+            };
+
+            fetchRooms();
         }, []) // Empty deps: re-run every time the screen is focused
     );
 
@@ -78,6 +93,14 @@ export default function RoomApplicationPage() {
                     </View>
                 )}
             />
+            {userRoom && (
+                <View style={{ marginTop: 30, padding: 10, backgroundColor: '#ecf0f3', borderRadius: 6 }}>
+                    <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 6 }}>Your Room(s)</Text>
+                    {userRoom.map((ur) => (
+                        <Text key={ur.id} style={{ fontSize: 16 }}>{ur.name}</Text>
+                    ))}
+                </View>
+            )}
         </View>
     );
 }
