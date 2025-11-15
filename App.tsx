@@ -7,10 +7,10 @@ import { TouchableOpacity, Text, View, Alert } from 'react-native';
 
 import LoginPage from './screens/LoginPage';
 import SignupPage from './screens/SignupPage';
-import RoomApplicationPage from './screens/RoomApplicationPage';
 import ComplaintListPage from './screens/ComplaintListPage';
 import NewComplaintPage from './screens/NewComplaintPage';
 import ComplaintDetailsPage from './screens/ComplaintDetailPage';
+import HostelApplicationPage from './screens/RoomApplicationPage';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -36,8 +36,8 @@ function DrawerRoutes() {
     return (
         <Drawer.Navigator>
             <Drawer.Screen
-                name="Rooms"
-                component={RoomApplicationPage}
+                name="Hostels"
+                component={HostelApplicationPage}
             />
             <Drawer.Screen
                 name="Complaints"

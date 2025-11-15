@@ -1,100 +1,158 @@
-// RoomApplicationPage.tsx
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    StyleSheet,
+    FlatList,
+    Alert,
+} from 'react-native';
 
-interface Room {
+interface Hostel {
     id: number;
     name: string;
-    applied: boolean;
+    availableCapacity: number;
+    totalCapacity: number;
+    isFull: boolean;
+    approvedUsers: number[];
+    pendingUsers: number[];
+    rejectedUsers: number[];
 }
 
-export default function RoomApplicationPage() {
-    const [rooms, setRooms] = useState<Room[]>([]);
-    const [userRoom, setUserRoom] = useState<Room[]>([]);
+export default function HostelApplicationPage() {
+    const [hostels, setHostels] = useState<Hostel[]>([]);
+    const [userApprovedHostel, setUserApprovedHostel] = useState<Hostel | null>(null);
 
+    const [userId, setUserId] = useState<number>(-1);
+
+    // Fetch hostels on screen focus
     useFocusEffect(
         useCallback(() => {
-            const fetchRooms = async () => {
+            const loadHostels = async () => {
                 try {
                     const userJson = await AsyncStorage.getItem('user');
                     const user = userJson ? JSON.parse(userJson) : null;
-                    const res = await fetch('http://localhost:3000/api/room/all');
-                    const data = await res.json();
-                    const userId = user.id; // Replace this with your actual user ID from auth context/storage
+                    const userId = user?.id;
+                    setUserId(userId);
 
-                    const enriched = data.map((room: any) => {
-                        const userStatus = room.userStatuses.find((u: any) => u.userId === userId);
+                    const res = await fetch('http://localhost:3000/api/hostels/all');
+                    const data = await res.json();
+
+                    const hostelsMapped: Hostel[] = data.map((h: any) => {
+                        // Compute available capacity
+                        const available = h.totalCapacity - h.totalApprovedUsers;
+
+                        // Determine user status by scanning rooms
+                        let userStatus: "none" | "pending" | "approved" = "none";
+
+                        for (const room of h.rooms) {
+                            const found = room.userStatuses.find((u: any) => u.userId === userId);
+                            if (found) {
+                                userStatus = found.status as "pending" | "approved";
+                                break;
+                            }
+                        }
+
                         return {
-                            ...room,
-                            applied: !!userStatus,
-                            approved: userStatus?.status === 'approved',
+                            id: h.id,
+                            name: h.name,
+                            availableCapacity: available,
+                            totalCapacity: h.totalCapacity,
+                            isFull: available <= 0,
+                            userStatus,
+                            approvedUsers: h.approvedUsers ?? [],
+                            pendingUsers: h.pendingUsers ?? [],
+                            rejectedUsers: h.rejectedUsers ?? [],
                         };
                     });
 
-                    const approvedRooms = data.filter((room: any) =>
-                        room.userStatuses.some((ur: any) => ur.userId === userId && ur.status === 'approved')
-                    );
+                    setHostels(hostelsMapped);
 
-                    setRooms(enriched);
-                    setUserRoom(approvedRooms);
-                } catch (err) {
-                    Alert.alert('Error', 'Failed to load rooms');
+                    const approved = hostelsMapped.find((h) => h.approvedUsers.includes(Number(userId)));
+                    setUserApprovedHostel(approved || null);
+
+                } catch (e) {
+                    Alert.alert("Error", "Failed to load hostels.");
                 }
             };
 
-            fetchRooms();
-        }, []) // Empty deps: re-run every time the screen is focused
+            loadHostels();
+        }, [])
     );
 
-    const handleApply = async (roomId: number) => {
+    // Apply for hostel → backend assigns room automatically
+    const handleApply = async (hostelId: number) => {
         try {
             const userJson = await AsyncStorage.getItem('user');
             const user = userJson ? JSON.parse(userJson) : null;
-            const res = await axios.post('http://localhost:3000/api/user/apply-room', { userId: user.id, roomId });
 
-            if (res.data) {
-                setRooms(prev =>
-                    prev.map(room =>
-                        room.id === roomId ? { ...room, applied: true } : room
+            const response = await axios.post("http://localhost:3000/api/user/apply-hostel", {
+                userId: user.id,
+                hostelId
+            });
+
+            if (response.data) {
+                setHostels(prev =>
+                    prev.map(h =>
+                        h.id === hostelId
+                            ? { ...h, userStatus: "pending" }
+                            : h
                     )
                 );
-            } else {
-                const data = await res.data;
-                Alert.alert('Apply Failed', data.message);
+                Alert.alert("Success", "Hostel applied successfully!");
             }
-        } catch (err) {
-            Alert.alert('Error', 'Failed to apply.');
+        } catch (e) {
+            Alert.alert("Error", "Failed to apply.");
         }
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Available Rooms</Text>
+            <Text style={styles.title}>Available Hostels</Text>
+
             <FlatList
-                data={rooms}
+                data={hostels}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
-                    <View style={styles.row}>
-                        <Text style={styles.roomName}>{item.name}</Text>
+                    <View style={styles.hostelRow}>
+                        <View>
+                            <Text style={styles.hostelName}>{item.name}</Text>
+                            <Text style={styles.capacity}>
+                                {item.availableCapacity}/{item.totalCapacity} beds available
+                            </Text>
+                        </View>
+
                         <TouchableOpacity
-                            style={[styles.button, item.applied && styles.disabled]}
+                            style={[
+                                styles.button,
+                                (item.approvedUsers.includes(userId) || item.pendingUsers.includes(userId) || item.isFull) && styles.disabled,
+                            ]}
                             onPress={() => handleApply(item.id)}
-                            disabled={item.applied}
+                            disabled={item.approvedUsers.includes(userId) || item.pendingUsers.includes(userId) || item.isFull}
                         >
-                            <Text style={styles.buttonText}>{item.applied ? 'Applied' : 'Apply'}</Text>
+                            <Text style={styles.buttonText}>
+                                {item.approvedUsers.includes(userId)
+                                    ? "Approved"
+                                    : item.pendingUsers.includes(userId)
+                                        ? "Pending"
+                                        : item.isFull
+                                            ? "Full"
+                                            : "Apply"}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 )}
             />
-            {userRoom && (
-                <View style={{ marginTop: 30, padding: 10, backgroundColor: '#ecf0f3', borderRadius: 6 }}>
-                    <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 6 }}>Your Room(s)</Text>
-                    {userRoom.map((ur) => (
-                        <Text key={ur.id} style={{ fontSize: 16 }}>{ur.name}</Text>
-                    ))}
+
+            {userApprovedHostel && (
+                <View style={styles.assignmentBox}>
+                    <Text style={styles.assignmentTitle}>Your Hostel Assignment</Text>
+                    <Text style={styles.assignmentItem}>
+                        {userApprovedHostel.name}
+                    </Text>
                 </View>
             )}
         </View>
@@ -102,38 +160,38 @@ export default function RoomApplicationPage() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: '#f9fafb',
-    },
-    title: {
-        fontSize: 22,
-        fontWeight: '600',
-        marginBottom: 20,
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 10,
+    container: { flex: 1, padding: 20, backgroundColor: "#f9fafb" },
+    title: { fontSize: 22, fontWeight: "600", marginBottom: 20 },
+    hostelRow: {
+        paddingVertical: 14,
         borderBottomWidth: 1,
-        borderColor: '#e5e7eb',
+        borderColor: "#e5e7eb",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center"
     },
-    roomName: {
-        fontSize: 16,
-    },
+    hostelName: { fontSize: 18, fontWeight: "500" },
+    capacity: { fontSize: 12, color: "#6b7280" },
     button: {
-        backgroundColor: '#2563eb',
+        backgroundColor: "#2563eb",
         paddingVertical: 8,
-        paddingHorizontal: 16,
+        paddingHorizontal: 18,
+        borderRadius: 6
+    },
+    disabled: { backgroundColor: "#9ca3af" },
+    buttonText: { color: "#fff", fontWeight: "600" },
+    assignmentBox: {
+        marginTop: 30,
+        padding: 12,
+        backgroundColor: "#e8f1ff",
         borderRadius: 6,
     },
-    disabled: {
-        backgroundColor: '#9ca3af',
+    assignmentTitle: {
+        fontSize: 18,
+        fontWeight: "600",
+        marginBottom: 6,
     },
-    buttonText: {
-        color: '#fff',
-        fontWeight: '500',
+    assignmentItem: {
+        fontSize: 16,
     },
 });
