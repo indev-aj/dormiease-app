@@ -13,6 +13,7 @@ import HostelApplicationPage from './screens/RoomApplicationPage';
 import MaintenanceListPage from './screens/MaintenanceListPage';
 import NewMaintenancePage from './screens/NewMaintenancePage';
 import ComplaintListPage from './screens/ComplaintListPage';
+import MaintenanceDetailsPage from './screens/MaintenanceDetailPage';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -97,7 +98,7 @@ export default function App() {
                     />
                     <Stack.Screen
                         name="MaintenanceDetails"
-                        component={MaintenanceListPage}
+                        component={MaintenanceDetailsPage}
                         options={{ title: "Maintenance Details" }}
                     />
                     <Stack.Screen
