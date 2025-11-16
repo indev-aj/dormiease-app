@@ -6,50 +6,50 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { FAB } from 'react-native-paper';
 
-interface Complaint {
+interface Maintenance {
     id: number;
     title: string;
     details: string;
     status: 'open' | 'resolved';
 }
 
-export default function ComplaintListPage({ navigation }: any) {
-    const [complaints, setComplaints] = useState<Complaint[]>([]);
+export default function MaintenanceListPage({ navigation }: any) {
+    const [maintenances, setMaintenances] = useState<Maintenance[]>([]);
 
     useFocusEffect(
         useCallback(() => {
-            const fetchComplaints = async () => {
+            const fetchMaintenance = async () => {
                 try {
                     const userJson = await AsyncStorage.getItem('user');
                     const user = userJson ? JSON.parse(userJson) : null;
 
-                    const url = 'http://localhost:3000/api/complaint/' + user.id;
+                    const url = 'http://localhost:3000/api/maintenance/' + user.id;
                     const res = await axios.get(url);
                     const data = await res.data;
 
-                    setComplaints(data);
+                    setMaintenances(data);
                 } catch (err) {
-                    console.error('Failed to fetch complaints');
+                    console.error('Failed to fetch maintenances');
                 }
             };
 
-            fetchComplaints();
+            fetchMaintenance();
         }, []) // Empty deps: re-run every time the screen is focused
     );
 
     const handleClickFAB = () => {
-        navigation.navigate('AddNewComplaint');
+        navigation.navigate('AddNewMaintenance');
     }
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>My Complaints</Text>
+            <Text style={styles.title}>My Maintenance Requests</Text>
             <FlatList
-                data={complaints}
+                data={maintenances}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
                     <TouchableOpacity
-                        onPress={() => navigation.navigate('ComplaintDetails', { complaint: item })}
+                        onPress={() => navigation.navigate('MaintenanceDetails', { complaint: item })}
                     >
                         <View style={[styles.item, item.status === 'resolved' && styles.resolvedItem]}>
                             <Text style={styles.itemTitle}>{item.title}</Text>
@@ -59,7 +59,8 @@ export default function ComplaintListPage({ navigation }: any) {
                     </TouchableOpacity>
                 )}
             />
-             <FAB icon={"plus"} style={styles.fab} onPress={handleClickFAB}/>
+
+            <FAB icon={"plus"} style={styles.fab} onPress={handleClickFAB}/>
         </View>
     );
 }

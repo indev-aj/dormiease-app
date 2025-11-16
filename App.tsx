@@ -7,10 +7,12 @@ import { TouchableOpacity, Text, View, Alert } from 'react-native';
 
 import LoginPage from './screens/LoginPage';
 import SignupPage from './screens/SignupPage';
-import ComplaintListPage from './screens/ComplaintListPage';
 import NewComplaintPage from './screens/NewComplaintPage';
 import ComplaintDetailsPage from './screens/ComplaintDetailPage';
 import HostelApplicationPage from './screens/RoomApplicationPage';
+import MaintenanceListPage from './screens/MaintenanceListPage';
+import NewMaintenancePage from './screens/NewMaintenancePage';
+import ComplaintListPage from './screens/ComplaintListPage';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -40,12 +42,12 @@ function DrawerRoutes() {
                 component={HostelApplicationPage}
             />
             <Drawer.Screen
-                name="Complaints"
-                component={ComplaintListPage}
+                name="Maintenance"
+                component={MaintenanceListPage}
             />
             <Drawer.Screen
-                name="Submit Complaint"
-                component={NewComplaintPage}
+                name="Complaints"
+                component={ComplaintListPage}
             />
             <Drawer.Screen
                 name="Logout"
@@ -92,6 +94,21 @@ export default function App() {
                         name="ComplaintDetails"
                         component={ComplaintDetailsPage}
                         options={{ title: "Complaint Details" }}
+                    />
+                    <Stack.Screen
+                        name="MaintenanceDetails"
+                        component={MaintenanceListPage}
+                        options={{ title: "Maintenance Details" }}
+                    />
+                    <Stack.Screen
+                        name="AddNewComplaint"
+                        component={NewComplaintPage}
+                        options={{ title: "Complaints" }}
+                    />
+                    <Stack.Screen
+                        name="AddNewMaintenance"
+                        component={NewMaintenancePage}
+                        options={{ title: "Maintenance" }}
                     />
                 </Stack.Navigator>
             </NavigationContainer>
