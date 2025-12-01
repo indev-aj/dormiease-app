@@ -14,6 +14,7 @@ import MaintenanceListPage from './screens/MaintenanceListPage';
 import NewMaintenancePage from './screens/NewMaintenancePage';
 import ComplaintListPage from './screens/ComplaintListPage';
 import MaintenanceDetailsPage from './screens/MaintenanceDetailPage';
+import MessagingPage from './screens/MessagingPage';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -49,6 +50,10 @@ function DrawerRoutes() {
             <Drawer.Screen
                 name="Complaints"
                 component={ComplaintListPage}
+            />
+            <Drawer.Screen
+                name="Messages"
+                component={MessagingPage}
             />
             <Drawer.Screen
                 name="Logout"
