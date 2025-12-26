@@ -5,6 +5,7 @@ import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { FAB } from 'react-native-paper';
+import { API_BASE_URL } from '../config/api';
 
 interface Complaint {
     id: number;
@@ -23,7 +24,7 @@ export default function ComplaintListPage({ navigation }: any) {
                     const userJson = await AsyncStorage.getItem('user');
                     const user = userJson ? JSON.parse(userJson) : null;
 
-                    const url = 'http://localhost:3000/api/complaint/' + user.id;
+                    const url = `${API_BASE_URL}/api/complaint/${user.id}`;
                     const res = await axios.get(url);
                     const data = await res.data;
 

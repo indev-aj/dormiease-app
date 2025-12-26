@@ -10,8 +10,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
-const API_BASE = "http://localhost:3000/api/user";
+const API_BASE = `${API_BASE_URL}/api/user`;
 
 export default function NotificationPage({ navigation }: any) {
     const [user, setUser] = useState<any>(null);

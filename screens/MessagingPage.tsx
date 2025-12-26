@@ -11,8 +11,9 @@ import {
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from "../config/api";
 
-const API_BASE = "http://localhost:3000/api";
+const API_BASE = `${API_BASE_URL}/api`;
 
 export default function MessagingPage({ navigation }: any) {
     const [user, setUser] = useState<any>(null);

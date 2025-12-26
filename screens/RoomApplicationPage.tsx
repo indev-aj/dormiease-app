@@ -10,6 +10,7 @@ import {
     FlatList,
     Alert,
 } from 'react-native';
+import { API_BASE_URL } from '../config/api';
 
 interface Hostel {
     id: number;
@@ -38,7 +39,7 @@ export default function HostelApplicationPage() {
                     const userId = user?.id;
                     setUserId(userId);
 
-                    const res = await fetch('http://localhost:3000/api/hostels/all');
+                    const res = await fetch(`${API_BASE_URL}/api/hostels/all`);
                     const data = await res.json();
 
                     const hostelsMapped: Hostel[] = data.map((h: any) => {
@@ -89,7 +90,7 @@ export default function HostelApplicationPage() {
             const userJson = await AsyncStorage.getItem('user');
             const user = userJson ? JSON.parse(userJson) : null;
 
-            const response = await axios.post("http://localhost:3000/api/user/apply-hostel", {
+            const response = await axios.post(`${API_BASE_URL}/api/user/apply-hostel`, {
                 userId: user.id,
                 hostelId
             });

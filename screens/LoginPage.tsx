@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { API_BASE_URL } from '../config/api';
 
 export default function LoginPage({ navigation }: any) {
     const [email, setEmail] = useState('');
@@ -10,7 +11,7 @@ export default function LoginPage({ navigation }: any) {
 
     const handleLogin = async () => {
         try {
-            const res = await axios.post('http://localhost:3000/api/user/signin', {email, password});
+            const res = await axios.post(`${API_BASE_URL}/api/user/signin`, {email, password});
 
             const data = await res.data;
             
@@ -24,6 +25,7 @@ export default function LoginPage({ navigation }: any) {
             }
 
         } catch (err) {
+            console.error('login error: ', err);
             Alert.alert('Error', 'Unable to login.');
         }
     };

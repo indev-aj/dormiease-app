@@ -2,6 +2,7 @@
 import axios from 'axios';
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { API_BASE_URL } from '../config/api';
 
 export default function SignupPage({ navigation }: any) {
     const [name, setName] = useState('');
@@ -11,7 +12,7 @@ export default function SignupPage({ navigation }: any) {
 
     const handleSignup = async () => {
         try {
-            const res = await axios.post('http://localhost:3000/api/user/signup', {name, studentId, password, email});
+            const res = await axios.post(`${API_BASE_URL}/api/user/signup`, {name, studentId, password, email});
             const data = await res.data;
 
             if (res.status == 201 || res.status == 200) {

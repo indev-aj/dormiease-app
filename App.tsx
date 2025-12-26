@@ -17,6 +17,7 @@ import MaintenanceDetailsPage from './screens/MaintenanceDetailPage';
 import MessagingPage from './screens/MessagingPage';
 import NotificationPage from './screens/NotificationPage';
 import HomePage from './screens/HomePage';
+import ScanPage from './screens/ScanPage';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -125,6 +126,11 @@ export default function App() {
                         name="AddNewMaintenance"
                         component={NewMaintenancePage}
                         options={{ title: "Maintenance" }}
+                    />
+                    <Stack.Screen
+                        name="Scan"
+                        component={ScanPage}
+                        options={{ title: "Scan QR" }}
                     />
                 </Stack.Navigator>
             </NavigationContainer>

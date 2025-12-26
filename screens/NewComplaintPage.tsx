@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { API_BASE_URL } from '../config/api';
 
 export default function NewComplaintPage({ navigation }: any) {
     const [title, setTitle] = useState('');
@@ -13,7 +14,7 @@ export default function NewComplaintPage({ navigation }: any) {
             const userJson = await AsyncStorage.getItem('user');
             const user = userJson ? JSON.parse(userJson) : null;
 
-            const res = await axios.post('http://localhost:3000/api/user/submit-complaint', { userId: user.id, title, details });
+            const res = await axios.post(`${API_BASE_URL}/api/user/submit-complaint`, { userId: user.id, title, details });
 
             if (res.data) {
                 Alert.alert('Complaint submitted');

@@ -1,15 +1,20 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
     View,
     Text,
     StyleSheet,
     ScrollView,
     RefreshControl,
+    TouchableOpacity,
+    Alert,
 } from "react-native";
+import { Camera } from "expo-camera";
+import { useFocusEffect } from "@react-navigation/native";
+import { API_BASE_URL } from "../config/api";
 
-const APPLICATIONS_API = "http://localhost:3000/api/hostels/all-applications";
+const APPLICATIONS_API = `${API_BASE_URL}/api/hostels/all-applications`;
 
 interface Application {
     applicationId: number;
@@ -56,15 +61,18 @@ export default function HomePage({ navigation }: any) {
         setLoading(false);
     };
 
-    useEffect(() => {
-        const loadData = async () => {
-            const currentUser = await loadUser();
-            if (currentUser?.id) {
-                fetchApplications(currentUser.id);
-            }
-        };
-        loadData();
+    const refreshData = useCallback(async () => {
+        const currentUser = await loadUser();
+        if (currentUser?.id) {
+            fetchApplications(currentUser.id);
+        }
     }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            refreshData();
+        }, [refreshData])
+    );
 
     const sortedApplications = useMemo(() => {
         return [...applications].sort(
@@ -95,6 +103,17 @@ export default function HomePage({ navigation }: any) {
     };
     const moveInDate = formatDate(latestApproved?.moveInDate);
     const moveOutDate = formatDate(latestApproved?.moveOutDate);
+    const handleScanPress = useCallback(async () => {
+        const permission = await Camera.requestCameraPermissionsAsync();
+        if (permission.status !== "granted") {
+            Alert.alert(
+                "Camera permission required",
+                "Please allow camera access to scan the QR code."
+            );
+            return;
+        }
+        navigation.navigate("Scan");
+    }, [navigation]);
 
     return (
         <ScrollView
@@ -157,18 +176,28 @@ export default function HomePage({ navigation }: any) {
                 </View>
                 <View style={styles.row}>
                     <Text style={styles.label}>Status</Text>
-                    <Text
-                        style={[
-                            styles.value,
-                            paymentStatus === "Paid"
-                                ? styles.paid
-                                : paymentStatus === "Unpaid"
-                                ? styles.unpaid
-                                : styles.muted,
-                        ]}
-                    >
-                        {paymentStatus}
-                    </Text>
+                    <View style={styles.statusRow}>
+                        <Text
+                            style={[
+                                styles.value,
+                                paymentStatus === "Paid"
+                                    ? styles.paid
+                                    : paymentStatus === "Unpaid"
+                                        ? styles.unpaid
+                                        : styles.muted,
+                            ]}
+                        >
+                            {paymentStatus}
+                        </Text>
+                        {paymentStatus == "Unpaid" &&
+                            <TouchableOpacity
+                                style={styles.scanButton}
+                                onPress={handleScanPress}
+                            >
+                                <Text style={styles.scanButtonText}>Scan QR</Text>
+                            </TouchableOpacity>
+                        }
+                    </View>
                 </View>
             </View>
         </ScrollView>
@@ -207,6 +236,22 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         marginBottom: 8,
+    },
+    statusRow: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    scanButton: {
+        backgroundColor: "#2563eb",
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+        borderRadius: 6,
+        marginLeft: 10,
+    },
+    scanButtonText: {
+        color: "#ffffff",
+        fontSize: 12,
+        fontWeight: "600",
     },
     label: {
         color: "#6b7280",
